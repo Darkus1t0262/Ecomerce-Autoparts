@@ -1,0 +1,33 @@
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+             xmlns:tns="http://example.com/soap" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+             name="external_api_integrationSOAPService" targetNamespace="http://example.com/soap">
+    <message name="Request">
+        <part name="input" type="xsd:string"/>
+    </message>
+    <message name="Response">
+        <part name="output" type="xsd:string"/>
+    </message>
+    <portType name="external_api_integrationPortType">
+        <operation name="external_api_integrationOperation">
+            <input message="tns:Request"/>
+            <output message="tns:Response"/>
+        </operation>
+    </portType>
+    <binding name="external_api_integrationBinding" type="tns:external_api_integrationPortType">
+        <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <operation name="external_api_integrationOperation">
+            <soap:operation soapAction="external_api_integrationAction"/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+        </operation>
+    </binding>
+    <service name="external_api_integrationService">
+        <port name="external_api_integrationPort" binding="tns:external_api_integrationBinding">
+            <soap:address location="http://localhost:5003/external_api_integration"/>
+        </port>
+    </service>
+</definitions>
