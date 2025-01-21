@@ -43,7 +43,7 @@ def create_initial_files(service_path, language):
         os.makedirs(os.path.join(service_path, "src"), exist_ok=True)
         with open(os.path.join(service_path, "src", "Program.cs"), "w") as f:
             f.write(csharp_app_template())
-        with open(os.path.join(service_path, "src", f"{service_path.split('/')[-1].capitalize()}.csproj"), "w") as f:
+        with open(os.path.join(service_path, "src", f"{service_path.split(os.sep)[-1].capitalize()}.csproj"), "w") as f:
             f.write(csharp_project_template())
 
     elif language == "nodejs":
@@ -149,9 +149,6 @@ def create_service_structure(root_dir):
 
 # Ejecutar el script
 if __name__ == "__main__":
-    root_directory = os.path.join(os.getcwd(), "Ecomerce-Autoparts")
-
-    # Crear carpeta raíz del proyecto
-    os.makedirs(root_directory, exist_ok=True)
+    root_directory = os.getcwd()  # FIX: Use current working directory directly
     create_service_structure(root_directory)
     print("🚀 ¡Estructura del proyecto creada exitosamente!")
