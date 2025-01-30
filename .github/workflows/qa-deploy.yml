@@ -32,12 +32,12 @@ jobs:
         push: true
         tags: darkjus/auth-service:latest
 
-    # 🚀 Deploy Auth Service on EC2
+    # 🚀 Deploy Auth Service on EC2 (Amazon Linux)
     - name: Deploy Auth Service on EC2
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.DNS_AUTH_SERVICE }}
-        username: ubuntu
+        username: ec2-user  # ✅ Fixed for Amazon Linux
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
           sudo docker stop auth-service || true
@@ -57,12 +57,12 @@ jobs:
         push: true
         tags: darkjus/product-service:latest
 
-    # 🚀 Deploy Product Service on EC2
+    # 🚀 Deploy Product Service on EC2 (Amazon Linux)
     - name: Deploy Product Service on EC2
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.DNS_PRODUCT_SERVICE }}
-        username: ubuntu
+        username: ec2-user  # ✅ Fixed for Amazon Linux
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
           sudo docker stop product-service || true
@@ -85,12 +85,12 @@ jobs:
         push: true
         tags: darkjus/order-service:latest
 
-    # 🚀 Deploy Order Service on EC2
+    # 🚀 Deploy Order Service on EC2 (Amazon Linux)
     - name: Deploy Order Service on EC2
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.DNS_ORDER_SERVICE }}
-        username: ubuntu
+        username: ec2-user  # ✅ Fixed for Amazon Linux
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
           sudo docker stop order-service || true
