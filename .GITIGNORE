@@ -1,4 +1,5 @@
 # Ignore all .tar and .tar.gz files
-*.tar
-*.tar.gz
-*.tgz
+.tar
+.tar.gz
+.tgz
+.env
