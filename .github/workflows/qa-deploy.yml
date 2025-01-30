@@ -1,0 +1,44 @@
+  # Deploy Auth Service
+  - name: Build and push Auth Service Docker image
+    uses: docker/build-push-action@v4
+    with:
+      context: ./auth
+      file: ./auth/Dockerfile
+      push: true
+      tags: ${{ secrets.DOCKER_USERNAME }}/auth-service:latest
+
+  - name: Deploy Auth Service on EC2
+    uses: appleboy/ssh-action@master
+    with:
+        host: ${{ secrets.DNS_AUTH_SERVICE }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          sudo docker stop auth-service || echo "No existing process found"
+          sudo docker rm auth-service || echo "No existing process found"
+          sudo docker pull ${{ secrets.DOCKER_USERNAME }}/auth-service:latest
+          sudo docker run -d -p 3000:3000 --name auth-service \
+            -e JWT_SECRET=${{ secrets.JWT_SECRET }} \
+            ${{ secrets.DOCKER_USERNAME }}/auth-service
+
+  # Deploy Order Service
+  - name: Build and push Order Service Docker image
+    uses: docker/build-push-action@v4
+    with:
+      context: ./order
+      file: ./order/Dockerfile
+      push: true
+      tags: ${{ secrets.DOCKER_USERNAME }}/order-service:latest
+
+  - name: Deploy Order Service on EC2
+    uses: appleboy/ssh-action@master
+    with:
+        host: ${{ secrets.DNS_ORDER_SERVICE }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          sudo docker stop order-service || echo "No existing process found"
+          sudo docker rm order-service || echo "No existing process found"
+          sudo docker pull ${{ secrets.DOCKER_USERNAME }}/order-service:latest
+          sudo docker run -d -p 5000:5000 --name order-service \
+            ${{ secrets.DOCKER_USERNAME }}/order-service
