@@ -1,5 +1,76 @@
-# Ignore all .tar and .tar.gz files
-.tar
-.tar.gz
-.tgz
+# 🛑 Ignore environment variable files (Prevent leaking secrets)
 .env
+*/.env
+
+# 🛑 Ignore compressed and archive files
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+*.rar
+
+# 🛑 Ignore OS-specific system files
+.DS_Store  # macOS
+Thumbs.db  # Windows
+desktop.ini  # Windows
+
+# 🛑 Ignore Python-related files
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+venv/
+.venv/
+
+# 🛑 Ignore Node.js dependencies
+node_modules/
+npm-debug.log
+yarn-error.log
+.pnpm-debug.log
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# 🛑 Ignore compiled Go files
+*.exe
+*.out
+*.o
+*.a
+
+# 🛑 Ignore logs and temp files
+*.log
+tmp/
+*.pid
+
+# 🛑 Ignore Docker and Kubernetes files
+.dockerignore
+docker-compose.override.yml
+*.rdb  # Redis database dumps
+*.sql  # Database dumps
+*.sqlite
+*.db
+
+# 🛑 Ignore AWS and Terraform files
+.terraform/
+terraform.tfstate
+terraform.tfstate.backup
+*.tfvars
+.aws/  # AWS credentials directory
+
+# 🛑 Ignore VS Code and JetBrains settings
+.vscode/
+.idea/
+*.iml
+
+# 🛑 Ignore GitHub Actions workflow artifacts
+.github/workflows/*.log
+.github/workflows/*.bak
+
+# 🛑 Ignore EC2 SSH Keys (VERY IMPORTANT)
+*.pem
+*.ppk
+
+# 🛑 Ignore other potential secrets
+secrets.json
+config.json
+credentials.json
