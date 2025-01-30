@@ -3,7 +3,10 @@ name: Deploy to AWS EC2
 on:
   push:
     branches:
-      - main  # Runs when code is pushed to the `main` branch
+      - main  # ✅ Runs only when code is pushed to `main`
+  workflow_dispatch:  # ✅ Allows manual execution from GitHub Actions UI
+
+permissions: read-all  # ✅ Required to read repo data
 
 jobs:
   deploy:
@@ -13,6 +16,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
+    # ✅ Log in to DockerHub
     - name: Log in to Docker Hub
       uses: docker/login-action@v2
       with:
@@ -26,22 +30,23 @@ jobs:
         context: ./auth
         file: ./auth/Dockerfile
         push: true
-        tags: ${{ secrets.DOCKER_USERNAME }}/auth-service:latest
+        tags: darkjus/auth-service:latest
 
     # 🚀 Deploy Auth Service on EC2
     - name: Deploy Auth Service on EC2
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.DNS_AUTH_SERVICE }}
-        username: ${{ secrets.EC2_USER }}
+        username: ubuntu
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
-          sudo docker stop auth-service || echo "No existing process found"
-          sudo docker rm auth-service || echo "No existing process found"
-          sudo docker pull ${{ secrets.DOCKER_USERNAME }}/auth-service:latest
+          sudo docker stop auth-service || true
+          sudo docker rm auth-service || true
+          sudo docker pull darkjus/auth-service:latest
           sudo docker run -d -p 3000:3000 --name auth-service \
+            --restart always \
             -e JWT_SECRET=${{ secrets.JWT_SECRET }} \
-            ${{ secrets.DOCKER_USERNAME }}/auth-service
+            darkjus/auth-service
 
     # 🚀 Build and Push Product Service
     - name: Build and push Product Service Docker image
@@ -50,25 +55,26 @@ jobs:
         context: ./product
         file: ./product/Dockerfile
         push: true
-        tags: ${{ secrets.DOCKER_USERNAME }}/product-service:latest
+        tags: darkjus/product-service:latest
 
     # 🚀 Deploy Product Service on EC2
     - name: Deploy Product Service on EC2
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.DNS_PRODUCT_SERVICE }}
-        username: ${{ secrets.EC2_USER }}
+        username: ubuntu
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
-          sudo docker stop product-service || echo "No existing process found"
-          sudo docker rm product-service || echo "No existing process found"
-          sudo docker pull ${{ secrets.DOCKER_USERNAME }}/product-service:latest
+          sudo docker stop product-service || true
+          sudo docker rm product-service || true
+          sudo docker pull darkjus/product-service:latest
           sudo docker run -d -p 4000:4000 --name product-service \
+            --restart always \
             -e MONGO_URI=${{ secrets.MONGO_URI }} \
             -e MONGO_USER=${{ secrets.MONGO_USER }} \
             -e MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }} \
             -e MONGO_DB_NAME=${{ secrets.MONGO_DB_NAME }} \
-            ${{ secrets.DOCKER_USERNAME }}/product-service
+            darkjus/product-service
 
     # 🚀 Build and Push Order Service
     - name: Build and push Order Service Docker image
@@ -77,24 +83,25 @@ jobs:
         context: ./order
         file: ./order/Dockerfile
         push: true
-        tags: ${{ secrets.DOCKER_USERNAME }}/order-service:latest
+        tags: darkjus/order-service:latest
 
     # 🚀 Deploy Order Service on EC2
     - name: Deploy Order Service on EC2
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.DNS_ORDER_SERVICE }}
-        username: ${{ secrets.EC2_USER }}
+        username: ubuntu
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
-          sudo docker stop order-service || echo "No existing process found"
-          sudo docker rm order-service || echo "No existing process found"
-          sudo docker pull ${{ secrets.DOCKER_USERNAME }}/order-service:latest
+          sudo docker stop order-service || true
+          sudo docker rm order-service || true
+          sudo docker pull darkjus/order-service:latest
           sudo docker run -d -p 5000:5000 --name order-service \
+            --restart always \
             -e AUTH_SERVICE_URL=http://${{ secrets.DNS_AUTH_SERVICE }}:3000 \
             -e PRODUCT_SERVICE_URL=http://${{ secrets.DNS_PRODUCT_SERVICE }}:4000 \
             -e MONGO_URI=${{ secrets.MONGO_URI }} \
             -e MONGO_USER=${{ secrets.MONGO_USER }} \
             -e MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }} \
             -e MONGO_DB_NAME=${{ secrets.MONGO_DB_NAME }} \
-            ${{ secrets.DOCKER_USERNAME }}/order-service
+            darkjus/order-service
