@@ -1,6 +1,6 @@
 flask
 flask-graphql
-graphene
 flask-cors
+graphene
 pymongo
 python-dotenv
