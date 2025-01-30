@@ -2,3 +2,5 @@ flask
 flask-graphql
 graphene
 flask-cors
+pymongo
+python-dotenv

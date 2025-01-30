@@ -1,7 +1,9 @@
 version: '3.8'
+
 services:
   auth-service:
-    image: your-dockerhub-username/auth-service:latest
+    image: darkjus/auth-service:latest  # ✅ Fixed username
+    build: ./auth
     restart: always
     networks:
       - backend
@@ -11,16 +13,27 @@ services:
       - JWT_SECRET=mysecret
 
   product-service:
-    image: your-dockerhub-username/product-service:latest
+    image: darkjus/product-service:latest  # ✅ Fixed username
+    build: ./product
     restart: always
+    depends_on:
+      - mongo-db
     networks:
       - backend
     ports:
       - "4000:4000"
+    environment:
+      - MONGO_URI=mongodb://admin:password@mongo-db:27017/products_db
+      - MONGO_USER=admin
+      - MONGO_PASSWORD=password
+      - MONGO_DB_NAME=products_db
 
   order-service:
-    image: your-dockerhub-username/order-service:latest
+    image: darkjus/order-service:latest  # ✅ Fixed username
+    build: ./order
     restart: always
+    depends_on:
+      - mongo-db
     networks:
       - backend
     ports:
@@ -28,7 +41,28 @@ services:
     environment:
       - AUTH_SERVICE_URL=http://auth-service:3000
       - PRODUCT_SERVICE_URL=http://product-service:4000
+      - MONGO_URI=mongodb://admin:password@mongo-db:27017/orders_db
+      - MONGO_USER=admin
+      - MONGO_PASSWORD=password
+      - MONGO_DB_NAME=orders_db
+
+  mongo-db:
+    image: mongo:latest
+    container_name: mongo-db
+    restart: always
+    networks:
+      - backend
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+    volumes:
+      - mongo-data:/data/db
 
 networks:
   backend:
     driver: bridge
+
+volumes:
+  mongo-data:
