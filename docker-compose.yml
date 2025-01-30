@@ -1,0 +1,22 @@
+version: '3.8'
+services:
+  auth-service:
+    build: ./auth
+    ports:
+      - "3000:3000"
+    environment:
+      - VIRTUAL_HOST=auth.example.com
+
+  product-service:
+    build: ./product
+    ports:
+      - "4000:4000"
+    environment:
+      - VIRTUAL_HOST=products.example.com
+
+  order-service:
+    build: ./order
+    ports:
+      - "5000:5000"
+    environment:
+      - VIRTUAL_HOST=orders.example.com
