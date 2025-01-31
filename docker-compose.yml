@@ -10,7 +10,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - JWT_SECRET=${JWT_SECRET}  # ✅ Uses secret from environment file
+      - JWT_SECRET=${JWT_SECRET}
 
   product-service:
     image: darkjus/product-service:latest
@@ -24,10 +24,10 @@ services:
     ports:
       - "4000:4000"
     environment:
-      - MONGO_URI=${MONGO_URI}
+      - MONGO_URI=mongodb://${MONGO_USER}:${MONGO_PASSWORD}@3.84.196.21:27017/products_db?authSource=admin
       - MONGO_USER=${MONGO_USER}
       - MONGO_PASSWORD=${MONGO_PASSWORD}
-      - MONGO_DB_NAME=${MONGO_DB_NAME}
+      - MONGO_DB_NAME=products_db
 
   order-service:
     image: darkjus/order-service:latest
@@ -43,10 +43,10 @@ services:
     environment:
       - AUTH_SERVICE_URL=http://auth-service:3000
       - PRODUCT_SERVICE_URL=http://product-service:4000
-      - MONGO_URI=${MONGO_URI}
+      - MONGO_URI=mongodb://${MONGO_USER}:${MONGO_PASSWORD}@3.84.196.21:27017/orders_db?authSource=admin
       - MONGO_USER=${MONGO_USER}
       - MONGO_PASSWORD=${MONGO_PASSWORD}
-      - MONGO_DB_NAME=${MONGO_DB_NAME}
+      - MONGO_DB_NAME=orders_db
 
   mongo-db:
     image: mongo:latest
@@ -62,7 +62,7 @@ services:
     volumes:
       - mongo-data:/data/db
     healthcheck:
-      test: echo 'db.runCommand("ping").ok' | mongosh mongo-db:27017/test --quiet
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping').ok"]
       interval: 10s
       retries: 5
       start_period: 10s
