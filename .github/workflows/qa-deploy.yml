@@ -3,7 +3,7 @@ name: Deploy to AWS EC2
 on:
   push:
     branches:
-      - testingaws  # ✅ Runs only when code is pushed to `main`
+      - testingaws  # ✅ Runs only when code is pushed to `testingaws`
   workflow_dispatch:  # ✅ Allows manual execution from GitHub Actions UI
 
 permissions: read-all  # ✅ Required to read repo data
@@ -43,9 +43,10 @@ jobs:
           sudo docker stop auth-service || true
           sudo docker rm auth-service || true
           sudo docker pull darkjus/auth-service:latest
-          sudo docker run -d -p 3000:3000 --name auth-service \
+          sudo docker run -d --name auth-service \
             --restart always \
-            -e JWT_SECRET=${{ secrets.JWT_SECRET }} \
+            -p 3000:3000 \
+            -e "JWT_SECRET=${{ secrets.JWT_SECRET }}" \
             darkjus/auth-service
 
     # 🚀 Build and Push Product Service
@@ -68,12 +69,13 @@ jobs:
           sudo docker stop product-service || true
           sudo docker rm product-service || true
           sudo docker pull darkjus/product-service:latest
-          sudo docker run -d -p 4000:4000 --name product-service \
+          sudo docker run -d --name product-service \
             --restart always \
-            -e MONGO_URI=${{ secrets.MONGO_URI }} \
-            -e MONGO_USER=${{ secrets.MONGO_USER }} \
-            -e MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }} \
-            -e MONGO_DB_NAME=${{ secrets.MONGO_DB_NAME }} \
+            -p 4000:4000 \
+            -e "MONGO_URI=${{ secrets.MONGO_URI }}" \
+            -e "MONGO_USER=${{ secrets.MONGO_USER }}" \
+            -e "MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }}" \
+            -e "MONGO_DB_NAME=${{ secrets.MONGO_DB_NAME }}" \
             darkjus/product-service
 
     # 🚀 Build and Push Order Service
@@ -96,12 +98,13 @@ jobs:
           sudo docker stop order-service || true
           sudo docker rm order-service || true
           sudo docker pull darkjus/order-service:latest
-          sudo docker run -d -p 5000:5000 --name order-service \
+          sudo docker run -d --name order-service \
             --restart always \
-            -e AUTH_SERVICE_URL=http://${{ secrets.DNS_AUTH_SERVICE }}:3000 \
-            -e PRODUCT_SERVICE_URL=http://${{ secrets.DNS_PRODUCT_SERVICE }}:4000 \
-            -e MONGO_URI=${{ secrets.MONGO_URI }} \
-            -e MONGO_USER=${{ secrets.MONGO_USER }} \
-            -e MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }} \
-            -e MONGO_DB_NAME=${{ secrets.MONGO_DB_NAME }} \
+            -p 5000:5000 \
+            -e "AUTH_SERVICE_URL=http://${{ secrets.DNS_AUTH_SERVICE }}:3000" \
+            -e "PRODUCT_SERVICE_URL=http://${{ secrets.DNS_PRODUCT_SERVICE }}:4000" \
+            -e "MONGO_URI=${{ secrets.MONGO_URI }}" \
+            -e "MONGO_USER=${{ secrets.MONGO_USER }}" \
+            -e "MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }}" \
+            -e "MONGO_DB_NAME=${{ secrets.MONGO_DB_NAME }}" \
             darkjus/order-service
