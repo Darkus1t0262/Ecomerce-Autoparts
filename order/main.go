@@ -19,7 +19,7 @@ import (
 
 var authServiceURL = os.Getenv("AUTH_SERVICE_URL")       // e.g., http://auth-service:3000
 var productServiceURL = os.Getenv("PRODUCT_SERVICE_URL") // e.g., http://product-service:4000/graphql
-var mongoURI = os.Getenv("MONGO_URI")                    // e.g., mongodb://admin:password@mongo-db:27017
+var mongoURI = os.Getenv("MONGO_URI")                    // Ensure it's loading correctly admin:password@mongo-db:27017
 var mongoDBName = os.Getenv("MONGO_DB_NAME")             // e.g., orders_db
 
 var db *mongo.Database
