@@ -5,18 +5,24 @@ from flask_cors import CORS
 from pymongo import MongoClient
 import os
 
-# Configuración de la base de datos desde variables de entorno
-MONGO_URI = os.getenv("MONGO_URI", "mongodb://admin:password@3.84.196.21:27017/products_db")
+# ✅ Use correct MongoDB URI with authentication
+MONGO_URI = os.getenv("MONGO_URI", "mongodb://admin:password@3.84.196.21:27017/products_db?authSource=admin")
 
-client = MongoClient(MONGO_URI)
-db = client["products_db"]
-collection = db["products"]
+try:
+    client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
+    db = client["products_db"]
+    collection = db["products"]
+    client.server_info()  # ✅ Test connection
+    print("✅ Successfully connected to MongoDB!")
+except Exception as e:
+    print(f"❌ MongoDB Connection Error: {e}")
+    exit(1)
 
-# Inicializar Flask
+# Initialize Flask
 app = Flask(__name__)
 CORS(app)
 
-# Definir el esquema GraphQL
+# Define GraphQL Schema
 class Product(ObjectType):
     id = String()
     name = String()
@@ -26,19 +32,19 @@ class Query(ObjectType):
     products = List(Product)
 
     def resolve_products(self, info):
-        products = collection.find({}, {"_id": 0})  # Excluir _id
+        products = collection.find({}, {"_id": 0})  # ✅ Exclude `_id` field
         return list(products)
 
 schema = Schema(query=Query)
 
-# Endpoint GraphQL
+# GraphQL Endpoint
 app.add_url_rule("/graphql", view_func=GraphQLView.as_view("graphql", schema=schema, graphiql=True))
 
-# Endpoint raíz
+# Root Endpoint
 @app.route("/")
 def home():
-    return jsonify({"message": "Product GraphQL API is running. Access GraphQL UI at /graphql"}), 200
+    return jsonify({"message": "✅ Product GraphQL API is running. Access GraphQL UI at /graphql"}), 200
 
-# Iniciar el servidor
+# Start the Flask App
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=4000)
