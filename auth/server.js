@@ -1,26 +1,30 @@
+require('dotenv').config(); // ✅ Load environment variables
 const express = require('express');
 const jwt = require('jsonwebtoken');
 
 const app = express();
 app.use(express.json());
 
-const SECRET_KEY = "your_secret_key";
+// ✅ Use JWT_SECRET from .env or fallback to a default
+const SECRET_KEY = process.env.JWT_SECRET || "fallback_secret_key";
 
-// ✅ Agregar una ruta para `/` (Solución al error 404)
+// ✅ Root endpoint
 app.get('/', (req, res) => {
     res.json({ message: "Auth Service is running!" });
 });
 
-// Endpoint para login
+// ✅ Login endpoint to generate token
 app.post('/login', (req, res) => {
     const { username } = req.body;
+    if (!username) return res.status(400).json({ message: "Username is required" });
+
     const token = jwt.sign({ username }, SECRET_KEY, { expiresIn: '1h' });
     res.json({ token });
 });
 
-// Verificar token
+// ✅ Token verification endpoint
 app.get('/verify', (req, res) => {
-    const token = req.headers['authorization'];
+    const token = req.headers['authorization']?.split(' ')[1]; // ✅ Extract token properly
     if (!token) return res.status(403).json({ message: "No token provided" });
 
     jwt.verify(token, SECRET_KEY, (err, decoded) => {
@@ -29,5 +33,6 @@ app.get('/verify', (req, res) => {
     });
 });
 
-// Iniciar el servidor en el puerto 3000
-app.listen(3000, () => console.log('Auth service running on port 3000'));
+// ✅ Start the server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`✅ Auth service running on port ${PORT}`));
