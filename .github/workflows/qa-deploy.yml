@@ -24,13 +24,8 @@ jobs:
         password: ${{ secrets.DOCKER_PASSWORD }}
 
     # 🚀 Build and Push MongoDB Image
-    - name: Build and push MongoDB Docker image
-      uses: docker/build-push-action@v4
-      with:
-        context: ./mongodb
-        file: ./mongodb/Dockerfile
-        push: true
-        tags: darkjus/mongo-db:latest
+    - name: Pull official MongoDB image
+      run: docker pull mongo:6.0
 
     # 🚀 Deploy MongoDB on EC2
     - name: Deploy MongoDB on EC2
@@ -41,20 +36,15 @@ jobs:
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
           sleep 10
-          sudo docker stop mongo-db || true && sudo docker rm mongo-db || true
-          sudo docker rm mongo-db || true
-          sudo docker pull darkjus/mongo-db:latest
+          sudo docker stop ${service}-service || true && sudo docker rm ${service}-service || true
+          sudo docker pull mongo:6.0
           sudo docker run -d --name mongo-db \
             --restart always \
             -v mongo_data:/data/db \
             -p 27017:27017 \
             -e "MONGO_INITDB_ROOT_USERNAME=${{ secrets.MONGO_USER }}" \
-            -e "MONGO_INITDB_ROOT_PASSWORD=${{ secrets.MONGO_PASSWORD }}"
-            --restart always \
-            -p 27017:27017 \
-            -e "MONGO_INITDB_ROOT_USERNAME=${{ secrets.MONGO_USER }}" \
             -e "MONGO_INITDB_ROOT_PASSWORD=${{ secrets.MONGO_PASSWORD }}" \
-            darkjus/mongo-db
+            mongo:6.0
 
     # 🚀 Build and Deploy Other Services (Auth, Product, Order)
     - name: Build and deploy services
@@ -73,7 +63,7 @@ jobs:
         script: |
           sleep 10
           for service in auth product order; do
-            sudo docker stop mongo-db || true && sudo docker rm mongo-db || true
+            sudo docker stop ${service}-service || true && sudo docker rm ${service}-service || true
             sudo docker rm ${service}-service || true
             sudo docker pull darkjus/${service}-service:latest
             sudo docker run -d --name ${service}-service \
