@@ -1,21 +1,19 @@
-db = db.getSiblingDB("products_db");
-db.createUser({
-  user: "admin",
-  pwd: "password",
-  roles: [{ role: "readWrite", db: "products_db" }]
-});
-
-db = db.getSiblingDB("orders_db");
-db.createUser({
-  user: "admin",
-  pwd: "password",
-  roles: [{ role: "readWrite", db: "orders_db" }]
-});
-
-db.products.insertMany([
-  { _id: "1", name: "Brake Pads", price: 50 },
-  { _id: "2", name: "Oil Filter", price: 15 },
-  { _id: "3", name: "Engine Oil", price: 25 }
-]);
-
-db.orders.insertMany([]); // Empty order collection
+mongo-db:
+  image: mongo:latest
+  container_name: mongo-db
+  restart: always
+  networks:
+    - backend
+  ports:
+    - "27017:27017"
+  environment:
+    - MONGO_INITDB_ROOT_USERNAME=admin
+    - MONGO_INITDB_ROOT_PASSWORD=password
+  volumes:
+    - mongo-data:/data/db
+    - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+  healthcheck:
+    test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping').ok"]
+    interval: 10s
+    retries: 5
+    start_period: 10s
