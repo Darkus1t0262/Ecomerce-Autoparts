@@ -6,7 +6,7 @@ from pymongo import MongoClient
 import os
 
 # ✅ Use correct MongoDB URI with authentication
-MONGO_URI = os.getenv("MONGO_URI", "mongodb://admin:password@3.84.196.21:27017/products_db?authSource=admin")
+MONGO_URI = os.getenv("MONGO_URI", "mongodb://admin:password@18.212.193.5:27017/products_db?authSource=admin")
 
 try:
     client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
