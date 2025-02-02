@@ -1,19 +1,19 @@
-mongo-db:
-  image: mongo:latest
-  container_name: mongo-db
-  restart: always
-  networks:
-    - backend
-  ports:
-    - "27017:27017"
-  environment:
-    - MONGO_INITDB_ROOT_USERNAME=admin
-    - MONGO_INITDB_ROOT_PASSWORD=password
-  volumes:
-    - mongo-data:/data/db
-    - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
-  healthcheck:
-    test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping').ok"]
-    interval: 10s
-    retries: 5
-    start_period: 10s
+db = db.getSiblingDB('admin');
+
+db.createUser({
+  user: "admin",
+  pwd: "password",
+  roles: [
+    { role: "readWrite", db: "orders_db" },
+    { role: "readWrite", db: "products_db" },
+    { role: "dbAdmin", db: "admin" }
+  ]
+});
+
+db = db.getSiblingDB('orders_db');
+db.createCollection("orders");
+
+db = db.getSiblingDB('products_db');
+db.createCollection("products");
+
+print("✅ MongoDB initialization completed!");
