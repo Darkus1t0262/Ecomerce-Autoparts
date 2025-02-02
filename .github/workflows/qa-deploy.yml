@@ -27,8 +27,8 @@ jobs:
     - name: Build and push MongoDB Docker image
       uses: docker/build-push-action@v4
       with:
-        context: ./database
-        file: ./database/Dockerfile
+        context: ./databases
+        file: ./databases/Dockerfile
         push: true
         tags: darkjus/mongo-db:latest
 
