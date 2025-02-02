@@ -48,9 +48,9 @@ services:
       - MONGO_PASSWORD=password
       - MONGO_DB_NAME=orders_db
 
-  # ✅ Custom MongoDB Image
+  # ✅ Standard MongoDB Image
   mongo-db:
-    image: darkjus/mongo-db:latest  # ✅ Using your custom MongoDB image
+    image: mongo:6.0  # ✅ Using official MongoDB image
     container_name: mongo-db
     restart: always
     networks:
