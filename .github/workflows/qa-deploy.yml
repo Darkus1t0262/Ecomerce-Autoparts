@@ -23,54 +23,88 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
-    # 🚀 Build and Push MongoDB Image
-    - name: Pull official MongoDB image
-      run: docker pull mongo:6.0
-
-    # 🚀 Deploy MongoDB on EC2
-    - name: Deploy MongoDB on EC2
-      uses: appleboy/ssh-action@v0.1.7
+    # 🚀 Build and Push Auth Service
+    - name: Build and push Auth Service Docker image
+      uses: docker/build-push-action@v4
       with:
-        host: 127.0.0.1
-        username: ec2-user
-        key: ${{ secrets.EC2_SSH_KEY }}
-        script: |
-          sleep 10
-          until sudo docker exec mongo-db mongosh --eval "db.runCommand('ping').ok"; do sleep 2; done
-          sudo docker stop mongo-db || true && sudo docker rm mongo-db || true
-          sudo docker pull mongo:6.0
-          sudo docker run -d --name mongo-db \
-            --restart always \
-            -v mongo_data:/data/db \
-            -p 27017:27017 \
-            -e "MONGO_INITDB_ROOT_USERNAME=${{ secrets.MONGO_USER }}" \
-            -e "MONGO_INITDB_ROOT_PASSWORD=${{ secrets.MONGO_PASSWORD }}" \
-            mongo:6.0
+        context: ./auth
+        file: ./auth/Dockerfile
+        push: true
+        tags: darkjus/auth-service:latest
 
-    # 🚀 Build and Deploy Other Services (Auth, Product, Order)
-    - name: Build and deploy services
-      run: |
-        for service in auth product order; do
-          docker build -t darkjus/${service}-service:latest ./$service
-          docker push darkjus/${service}-service:latest
-        done
-
-    - name: Deploy services to EC2
-      uses: appleboy/ssh-action@v0.1.7
+    # 🚀 Deploy Auth Service on EC2 (Amazon Linux)
+    - name: Deploy Auth Service on EC2
+      uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.DNS_AUTH_SERVICE }}
-        username: ec2-user
+        username: ec2-user  # ✅ Fixed for Amazon Linux
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
-          sleep 10
-          until sudo docker exec mongo-db mongosh --eval "db.runCommand('ping').ok"; do sleep 2; done
-          for service in auth product order; do
-            sudo docker stop mongo-db || true && sudo docker rm mongo-db || true
-            sudo docker rm ${service}-service || true
-            sudo docker pull darkjus/${service}-service:latest
-            sudo docker run -d --name ${service}-service \
-              --restart always \
-              -p $(( 3000 + RANDOM % 1000 )):$(( 3000 + RANDOM % 1000 )) \
-              --env-file ./${service}/.env \
-              darkjus/${service}-service
-          done
+          sudo docker stop auth-service || true
+          sudo docker rm auth-service || true
+          sudo docker pull darkjus/auth-service:latest
+          sudo docker run -d --name auth-service \
+            --restart always \
+            -p 3000:3000 \
+            -e "JWT_SECRET=${{ secrets.JWT_SECRET }}" \
+            darkjus/auth-service
+
+    # 🚀 Build and Push Product Service
+    - name: Build and push Product Service Docker image
+      uses: docker/build-push-action@v4
+      with:
+        context: ./product
+        file: ./product/Dockerfile
+        push: true
+        tags: darkjus/product-service:latest
+
+    # 🚀 Deploy Product Service on EC2 (Amazon Linux)
+    - name: Deploy Product Service on EC2
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.DNS_PRODUCT_SERVICE }}
+        username: ec2-user  # ✅ Fixed for Amazon Linux
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          sudo docker stop product-service || true
+          sudo docker rm product-service || true
+          sudo docker pull darkjus/product-service:latest
+          sudo docker run -d --name product-service \
+            --restart always \
+            -p 4000:4000 \
+            -e "MONGO_URI=${{ secrets.MONGO_URI }}" \
+            -e "MONGO_USER=${{ secrets.MONGO_USER }}" \
+            -e "MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }}" \
+            -e "MONGO_DB_NAME=${{ secrets.MONGO_DB_NAME }}" \
+            darkjus/product-service
+
+    # 🚀 Build and Push Order Service
+    - name: Build and push Order Service Docker image
+      uses: docker/build-push-action@v4
+      with:
+        context: ./order
+        file: ./order/Dockerfile
+        push: true
+        tags: darkjus/order-service:latest
+
+    # 🚀 Deploy Order Service on EC2 (Amazon Linux)
+    - name: Deploy Order Service on EC2
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.DNS_ORDER_SERVICE }}
+        username: ec2-user  # ✅ Fixed for Amazon Linux
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          sudo docker stop order-service || true
+          sudo docker rm order-service || true
+          sudo docker pull darkjus/order-service:latest
+          sudo docker run -d --name order-service \
+            --restart always \
+            -p 5000:5000 \
+            -e "AUTH_SERVICE_URL=http://${{ secrets.DNS_AUTH_SERVICE }}:3000" \
+            -e "PRODUCT_SERVICE_URL=http://${{ secrets.DNS_PRODUCT_SERVICE }}:4000" \
+            -e "MONGO_URI=${{ secrets.MONGO_URI }}" \
+            -e "MONGO_USER=${{ secrets.MONGO_USER }}" \
+            -e "MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }}" \
+            -e "MONGO_DB_NAME=${{ secrets.MONGO_DB_NAME }}" \
+            darkjus/order-service
