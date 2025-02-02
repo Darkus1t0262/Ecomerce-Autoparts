@@ -31,12 +31,13 @@ jobs:
     - name: Deploy MongoDB on EC2
       uses: appleboy/ssh-action@v0.1.7
       with:
-        host: mongo-db
+        host: 127.0.0.1
         username: ec2-user
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
           sleep 10
-          sudo docker stop ${service}-service || true && sudo docker rm ${service}-service || true
+          until sudo docker exec mongo-db mongosh --eval "db.runCommand('ping').ok"; do sleep 2; done
+          sudo docker stop mongo-db || true && sudo docker rm mongo-db || true
           sudo docker pull mongo:6.0
           sudo docker run -d --name mongo-db \
             --restart always \
@@ -62,8 +63,9 @@ jobs:
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
           sleep 10
+          until sudo docker exec mongo-db mongosh --eval "db.runCommand('ping').ok"; do sleep 2; done
           for service in auth product order; do
-            sudo docker stop ${service}-service || true && sudo docker rm ${service}-service || true
+            sudo docker stop mongo-db || true && sudo docker rm mongo-db || true
             sudo docker rm ${service}-service || true
             sudo docker pull darkjus/${service}-service:latest
             sudo docker run -d --name ${service}-service \
