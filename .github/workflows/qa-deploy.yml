@@ -135,3 +135,32 @@ jobs:
             -e "MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }}" \
             -e "MONGO_DB_NAME=orders_db" \
             darkjus/order-service
+
+    # 🚀 Build and Push Inventory Service
+    - name: Build and push Inventory Service Docker image
+      uses: docker/build-push-action@v4
+      with:
+        context: ./inventory
+        file: ./inventory/Dockerfile
+        push: true
+        tags: darkjus/inventory-service:latest
+
+    # 🚀 Deploy Inventory Service on EC2
+    - name: Deploy Inventory Service on EC2
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.DNS_INVENTORY_SERVICE }}
+        username: ec2-user
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          sudo docker stop inventory-service || true
+          sudo docker rm inventory-service || true
+          sudo docker pull darkjus/inventory-service:latest
+          sudo docker run -d --name inventory-service \
+            --restart always \
+            -p 6000:6000 \
+            -e "MONGO_URI=mongodb://${{ secrets.MONGO_USER }}:${{ secrets.MONGO_PASSWORD }}@${{ secrets.DNS_MONGO_DB }}:27017/inventory_db?authSource=admin" \
+            -e "MONGO_USER=${{ secrets.MONGO_USER }}" \
+            -e "MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }}" \
+            -e "MONGO_DB_NAME=inventory_db" \
+            darkjus/inventory-service

@@ -1,11 +1,11 @@
-variable "aws_region" {
-  default = "us-east-1"
+variable "ami_id" {
+  default = "ami-032ae1bccc5be78ca"  # ✅ Replace with your latest AMI
 }
 
 variable "instance_type" {
   default = "t2.micro"
 }
 
-variable "ami_id" {
-  default = "ami-0c55b159cbfafe1f0"  # Amazon Linux 2 (Change if needed)
+variable "key_name" {
+  default = "ecomerce"  # ✅ Use your AWS key pair name
 }
