@@ -29,3 +29,51 @@ secrets.json
 
 # Ignore database data
 /databases/mongo-data/
+
+# Ignore .pem private keys
+*.pem
+
+# Ignore environment configuration files
+.env
+.env.*
+
+# Ignore AWS credentials files
+.aws/
+*.aws
+
+# Ignore Terraform state files
+*.tfstate
+*.tfstate.backup
+
+# Ignore Docker build and log files
+docker-compose.override.yml
+docker-compose.override.yaml
+logs/
+*.log
+*.out
+
+# Ignore Python cache and virtual environments
+__pycache__/
+*.pyc
+*.pyo
+venv/
+env/
+
+# Ignore Node.js dependencies
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Ignore compiled Go files
+*.exe
+*.out
+*.o
+*.a
+*.so
+
+# Ignore VSCode settings (optional)
+.vscode/
+
+# Ignore Terraform provider plugins
+.terraform/
