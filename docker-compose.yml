@@ -47,8 +47,8 @@ services:
       - MONGO_USER=admin
       - MONGO_PASSWORD=password
       - MONGO_DB_NAME=orders_db
-    
-# ✅ Inventory Service (Nuevo)
+
+  # ✅ Inventory Service (Nuevo)
   inventory-service:
     image: darkjus/inventory-service:latest
     build: ./inventory
@@ -65,10 +65,10 @@ services:
       - MONGO_USER=admin
       - MONGO_PASSWORD=password
       - MONGO_DB_NAME=inventory_db
-      
+
   # ✅ Standard MongoDB Image
   mongo-db:
-    image: mongo:6.0  # ✅ Using official MongoDB image
+    image: mongo:6.0 # ✅ Using official MongoDB image
     container_name: mongo-db
     restart: always
     networks:
@@ -81,11 +81,11 @@ services:
     volumes:
       - mongo-data:/data/db
       - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
-    healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping').ok"]
-      interval: 10s
-      retries: 5
-      start_period: 10s
+healthcheck:
+  test: [ "CMD", "mongosh", "-u", "admin", "-p", "password", "--authenticationDatabase", "admin", "--eval", "db.adminCommand('ping').ok" ]
+  interval: 10s
+  retries: 5
+  start_period: 10s
 
 networks:
   backend:
