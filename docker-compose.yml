@@ -47,7 +47,25 @@ services:
       - MONGO_USER=admin
       - MONGO_PASSWORD=password
       - MONGO_DB_NAME=orders_db
-
+    
+# ✅ Inventory Service (Nuevo)
+  inventory-service:
+    image: darkjus/inventory-service:latest
+    build: ./inventory
+    restart: always
+    depends_on:
+      mongo-db:
+        condition: service_healthy
+    networks:
+      - backend
+    ports:
+      - "6000:6000"
+    environment:
+      - MONGO_URI=mongodb://admin:password@mongo-db:27017/inventory_db?authSource=admin
+      - MONGO_USER=admin
+      - MONGO_PASSWORD=password
+      - MONGO_DB_NAME=inventory_db
+      
   # ✅ Standard MongoDB Image
   mongo-db:
     image: mongo:6.0  # ✅ Using official MongoDB image
