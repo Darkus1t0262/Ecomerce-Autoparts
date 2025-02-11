@@ -10,11 +10,16 @@ client = MongoClient(MONGO_URI)
 db = client["inventory_db"]
 collection = db["inventory"]
 
-# 📌 Get all products on Inventory
+# 📌 Get all products in the inventory
 @app.route("/inventory", methods=["GET"])
 def get_inventory():
+    # Query the MongoDB collection to retrieve all products
+    # The second argument {"_id": 0} ensures the _id field is excluded from the response
     products = list(collection.find({}, {"_id": 0}))
+    
+    # Return the list of products as JSON with a 200 OK status
     return jsonify(products), 200
+
 
 # 📌 Add product to Inventory
 @app.route("/inventory", methods=["POST"])
