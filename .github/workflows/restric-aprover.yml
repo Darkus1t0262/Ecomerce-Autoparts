@@ -1,0 +1,36 @@
+name: Restrict Approver
+
+on:
+  pull_request:
+    branches:
+      - main  # This workflow runs only for pull requests targeting the main branch
+
+jobs:
+  check_approver:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get PR Approvals
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            // Define the required approver (change to the correct GitHub username)
+            const requiredApprover = "JuanGuevara90"; 
+            
+            // Get the list of all reviews for the current PR
+            const { data: reviews } = await github.rest.pulls.listReviews({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+            });
+
+            // Filter approvals and extract the usernames of those who approved
+            const approvedBy = reviews
+              .filter(review => review.state === "APPROVED")
+              .map(review => review.user.login);
+
+            // Check if the required approver is in the list
+            if (!approvedBy.includes(requiredApprover)) {
+              core.setFailed(`Only ${requiredApprover} is allowed to approve this PR.`);
+            }
