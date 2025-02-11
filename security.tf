@@ -18,12 +18,12 @@ resource "aws_security_group" "ecommerce_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # Allow MongoDB only from internal network
+  # Allow MongoDB 
   ingress {
     from_port   = 27017
     to_port     = 27017
     protocol    = "tcp"
-    cidr_blocks = ["10.0.0.0/16"]  # Internal network only
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   # Allow all outbound traffic

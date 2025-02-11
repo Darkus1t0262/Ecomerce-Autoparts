@@ -4,19 +4,19 @@ import os
 
 app = Flask(__name__)
 
-# 📌 Conexión con MongoDB
+# 📌 Conect to MongoDB
 MONGO_URI = os.getenv("MONGO_URI", "mongodb://admin:password@54.90.243.16:27017/inventory_db?authSource=admin")
 client = MongoClient(MONGO_URI)
 db = client["inventory_db"]
 collection = db["inventory"]
 
-# 📌 Obtener todos los productos en inventario
+# 📌 Get all products on Inventory
 @app.route("/inventory", methods=["GET"])
 def get_inventory():
     products = list(collection.find({}, {"_id": 0}))
     return jsonify(products), 200
 
-# 📌 Agregar un producto al inventario
+# 📌 Add product to Inventory
 @app.route("/inventory", methods=["POST"])
 def add_product():
     data = request.json
@@ -26,7 +26,7 @@ def add_product():
     collection.insert_one(data)
     return jsonify({"message": "Product added successfully!"}), 201
 
-# 📌 Actualizar stock de un producto
+# 📌 Update stock on product
 @app.route("/inventory/<product_id>", methods=["PUT"])
 def update_stock(product_id):
     data = request.json
@@ -35,7 +35,7 @@ def update_stock(product_id):
         return jsonify({"message": "Product not found"}), 404
     return jsonify({"message": "Product updated successfully!"}), 200
 
-# 📌 Eliminar un producto del inventario
+# 📌 Delete Product from Inventory
 @app.route("/inventory/<product_id>", methods=["DELETE"])
 def delete_product(product_id):
     result = collection.delete_one({"id": product_id})
