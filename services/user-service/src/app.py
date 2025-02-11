@@ -14,7 +14,7 @@ def get_users():
 def create_user():
     data = request.json
     if not data.get('name') or not data.get('email'):
-        return jsonify({"error": "Name and email are required"}), 400
+        return jsonify({"error": "Both 'name' and 'email' fields are required."}), 400
     user = {"id": len(users) + 1, "name": data['name'], "email": data['email']}
     users.append(user)
     return jsonify(user), 201
